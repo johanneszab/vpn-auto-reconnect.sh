@@ -6,15 +6,17 @@ A simple bash script for autoreconnect to OpenVPN via NetworkManager command-lin
 
 1. Make the script executable "_chmod +x /path/to/the/vpn-auto-reconnect.sh_"
 
-2. You have to set your openvpn _connection name_ and openvpn _uuid_ in the config section of the script. Type "_nmcli con show_" to get these values.
+2. Copy "_vpn-config-sample.sh_" to "_vpn-config.sh_". Simply run "_cp vpn-config-sample.sh vpn-config.sh_".
 
-3. _vpn-auto-reconnect.sh stop_ -- stops the monitor and also the VPN connection 
+3. Set your openvpn _connection name_ and openvpn _uuid_ in "_vpn-config.sh_". Run "_nmcli con show_" to get these values.
 
-4. _vpn-auto-reconnect.sh start_ -- starts and monitors VPN connection
-5.    a. You may want to to adjust the _DELAY_ time between ping checks, and also the "*-W timeout*" of the ping command in line _62_ if the timeout is too agressive.    
-      b. A summary of nmcli command changes for version v0.9.10 can be found here: https://wiki.gnome.org/Projects/NetworkManager/nmcli
+4. _vpn-auto-reconnect.sh stop_ -- stops the monitor and also the VPN connection
+
+5. _vpn-auto-reconnect.sh start_ -- starts and monitors VPN connection
 
 ## Source:
+
+nmcli: https://wiki.gnome.org/Projects/NetworkManager/nmcli
 
 Source: http://www.gabsoftware.com/tips/automatically-reconnect-to-your-vpn-on-linux/
 
