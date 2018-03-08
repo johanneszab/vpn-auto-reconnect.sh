@@ -20,18 +20,37 @@ source $(dirname $0)/vpn-config.sh
 # Implementation #
 ##################
 
+function logStuff {
+  echo "$1"
+  echo "$1" >> $LOG
+}
+
+function resetVPN {
+  logStuff "$(date +%Y/%m/%d\ %H:%M:%S) -> Trying to reconnect..."
+  (nmcli con down uuid $VPN_UID)
+  connectToVPN
+}
+
+function connectToVPN {
+  out="$(date +%Y/%m/%d\ %H:%M:%S) -> "
+  if [ -n "$(nmcli con show --active | grep 802-11-wireless)" ]; then
+    out+="Trying to connect..."
+    logStuff "$out"
+    (sleep 1s && nmcli con up uuid $VPN_UID)
+  else
+    out+="No active network connection"
+    logStuff "$out"
+  fi
+}
+
 function pingTest {
   # $1 = host
   # $2 = reconnect?
   PINGCON=$(ping $1 -c 2 -q -W $PING_TIMEOUT | grep "2 received")
   if [[ $PINGCON != *2*received* ]]; then
-    echo "$(date +%Y/%m/%d\ %H:%M:%S) -> Ping check timeout ($1)..." >> $LOG
+    logStuff "$(date +%Y/%m/%d\ %H:%M:%S) -> Ping check timeout ($1)..."
     if [[ $2 ]]; then
-      out="$(date +%Y/%m/%d\ %H:%M:%S) -> Trying to reconnect..."
-      echo "$out"
-      echo "$out" >> $LOG
-      (nmcli con down uuid $VPN_UID)
-      (sleep 1s && nmcli con up uuid $VPN_UID)
+      resetVPN
       host_pings_needed=false
     fi
   else
@@ -42,7 +61,6 @@ function pingTest {
 
 if [[ $1 == "stop" ]]; then
   nmcli con down uuid $VPN_UID
-
   echo "VPN monitoring service STOPPED!"
   echo "$(date +%Y/%m/%d\ %H:%M:%S) -> VPN monitoring service STOPPED!" >> $LOG
   notify-send "VPN monitoring service STOPPED!"
@@ -53,10 +71,8 @@ elif [[ $1 == "start" ]]; then
   while [ "true" ]; do
     VPNCON=$(nmcli con show --active | grep $VPN_NAME | cut -f1 -d " ")
     if [[ $VPNCON != $VPN_NAME ]]; then
-      out="$(date +%Y/%m/%d\ %H:%M:%S) -> Disconnected from $VPN_NAME, trying to reconnect..."
-      echo "$out"
-      echo "$out" >> $LOG
-      (sleep 1s && nmcli con up uuid $VPN_UID)
+      logStuff "$(date +%Y/%m/%d\ %H:%M:%S) -> Disconnected from $VPN_NAME, trying to reconnect..."
+      connectToVPN
     # else
       # echo "$(date +%Y/%m/%d\ %H:%M:%S) -> Already connected to $VPN_NAME!" >> $LOG
     fi
@@ -77,11 +93,10 @@ elif [[ $1 == "start" ]]; then
     fi
   done
 
-  echo "VPN monitoring service STARTED!"
-  echo "$(date +%Y/%m/%d\ %H:%M:%S) -> VPN monitoring service STARTED!" >> $LOG
+  logStuff "$(date +%Y/%m/%d\ %H:%M:%S) -> VPN monitoring service STARTED!"
   notify-send "VPN monitoring service STARTED!"
 else
-  echo "$(date +%Y/%m/%d\ %H:%M:%S) -> Unrecognised command: $0 $@" >> $LOG
+  logStuff "$(date +%Y/%m/%d\ %H:%M:%S) -> Unrecognised command: $0 $@"
   echo "Please use $0 [start|stop]"
   notify-send "UNRECOGNIZED COMMAND" "VPN monitoring service could not recognise the command!"
 fi
