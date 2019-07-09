@@ -1,6 +1,8 @@
 # You can see those with "nmcli con show --active" command
 VPN_NAME="VPN-NAME-HERE"
 VPN_UID="VPN-UID-HERE"
+VPN_PW_FILE="path/to/secrect"
+DEVICE="network device name"
  
 # Delay in secconds
 DELAY=60

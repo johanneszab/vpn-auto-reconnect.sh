@@ -33,7 +33,7 @@ function resetVPN {
 
 function connectToVPN {
   out="$(date +%Y/%m/%d\ %H:%M:%S) -> "
-  if [ -n "$(nmcli con show --active | grep 802-11-wireless)" ]; then
+  if [ -n "$(nmcli con show --active | grep $DEVICE)" ]; then
     out+="Trying to connect..."
     logStuff "$out"
     (sleep 1s && nmcli con up uuid $VPN_UID)
