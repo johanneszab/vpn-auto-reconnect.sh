@@ -20,6 +20,15 @@ source $(dirname $0)/vpn-config.sh
 # Implementation #
 ##################
 
+vpn_index=0
+vpns=${#VPN_UIDS[@]}
+VPN_UID=${VPN_UIDS[$vpn_index]}
+
+function set_vpn(){
+  VPN_UID=${VPN_UIDS[$vpn_index]}
+  vpn_index=$((($vpn_index + 1) % $vpns))
+}
+
 function logStuff {
   echo "$1"
   echo "$1" >> $LOG
@@ -34,8 +43,9 @@ function resetVPN {
 function connectToVPN {
   out="$(date +%Y/%m/%d\ %H:%M:%S) -> "
   if [ -n "$(nmcli con show --active | grep $DEVICE)" ]; then
-    out+="Trying to connect..."
+    out+="Connecting..."
     logStuff "$out"
+    set_vpn
     (sleep 1s && nmcli con up uuid $VPN_UID)
   else
     out+="No active network connection"
@@ -69,12 +79,12 @@ if [[ $1 == "stop" ]]; then
   kill $PID
 elif [[ $1 == "start" ]]; then
   while [ "true" ]; do
-    VPNCON=$(nmcli con show --active | grep $VPN_NAME | cut -f1 -d " ")
-    if [[ $VPNCON != $VPN_NAME ]]; then
-      logStuff "$(date +%Y/%m/%d\ %H:%M:%S) -> Disconnected from $VPN_NAME, trying to reconnect..."
+    VPNCON=$(nmcli con show --active | grep vpn | awk '{print $2}')
+    if [[ $VPNCON != $VPN_UID ]]; then
+      logStuff "$(date +%Y/%m/%d\ %H:%M:%S) -> Disconnected from $VPN_UID, trying to reconnect..."
       connectToVPN
     # else
-      # echo "$(date +%Y/%m/%d\ %H:%M:%S) -> Already connected to $VPN_NAME!" >> $LOG
+      # echo "$(date +%Y/%m/%d\ %H:%M:%S) -> Already connected to $VPN_UID!" >> $LOG
     fi
     sleep $DELAY
     if [[ $PING_CHECK_ENABLED = true ]]; then
