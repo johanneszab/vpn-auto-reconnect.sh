@@ -59,12 +59,15 @@ function pingTest {
   PINGCON=$(ping $1 -c 2 -q -W $PING_TIMEOUT | grep "2 received")
   if [[ $PINGCON != *2*received* ]]; then
     logStuff "$(date +%Y/%m/%d\ %H:%M:%S) -> Ping check timeout ($1)..."
+    host_timeout=true
     if [[ $2 ]]; then
       resetVPN
-      host_pings_needed=false
     fi
   else
-    # echo "$(date +%Y/%m/%d\ %H:%M:%S) -> Ping check ($1) - OK!" >> $LOG
+    if [[ $host_timeout ]]; then
+      logStuff "$(date +%Y/%m/%d\ %H:%M:%S) -> Ping check ($1) - OK!"
+      host_timeout=false
+    fi
     host_pings_needed=false
   fi
 }
