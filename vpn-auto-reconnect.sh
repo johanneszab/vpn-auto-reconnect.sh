@@ -82,14 +82,10 @@ if [[ $1 == "stop" ]]; then
   kill $PID
 elif [[ $1 == "start" ]]; then
   while [ "true" ]; do
-    VPNCON=$(nmcli con show --active | grep vpn | awk '{print $2}')
-    if [[ $VPNCON != $VPN_UID ]]; then
+    while [[ $(nmcli con show --active | grep vpn | awk '{print $2}') != $VPN_UID ]]; do
       logStuff "$(date +%Y/%m/%d\ %H:%M:%S) -> Disconnected from $VPN_UID, trying to reconnect..."
       connectToVPN
-    # else
-      # echo "$(date +%Y/%m/%d\ %H:%M:%S) -> Already connected to $VPN_UID!" >> $LOG
-    fi
-    sleep $DELAY
+    done
     if [[ $PING_CHECK_ENABLED = true ]]; then
       i=0
       host_length=${#HOSTS[@]}
@@ -105,6 +101,7 @@ elif [[ $1 == "start" ]]; then
       done
       vpn_index=0 # Prefer first
     fi
+    sleep $DELAY
   done
 
   logStuff "$(date +%Y/%m/%d\ %H:%M:%S) -> VPN monitoring service STARTED!"
