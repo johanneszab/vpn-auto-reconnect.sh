@@ -24,7 +24,7 @@ vpn_index=0
 vpns=${#VPN_UIDS[@]}
 VPN_UID=${VPN_UIDS[$vpn_index]}
 
-function set_vpn(){
+function next_vpn(){
   VPN_UID=${VPN_UIDS[$vpn_index]}
   vpn_index=$((($vpn_index + 1) % $vpns))
 }
@@ -37,6 +37,7 @@ function logStuff {
 function resetVPN {
   logStuff "$(date +%Y/%m/%d\ %H:%M:%S) -> Trying to reconnect..."
   (nmcli con down uuid $VPN_UID)
+  next_vpn
   connectToVPN
 }
 
@@ -45,7 +46,6 @@ function connectToVPN {
   if [ -n "$(nmcli con show --active | grep $DEVICE)" ]; then
     out+="Connecting..."
     logStuff "$out"
-    set_vpn
     (sleep 1s && nmcli con up uuid $VPN_UID)
   else
     out+="No active network connection"
@@ -100,6 +100,7 @@ elif [[ $1 == "start" ]]; then
           pingTest $host
         fi
       done
+      vpn_index=0 # Prefer first
     fi
   done
 
