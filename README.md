@@ -1,6 +1,6 @@
 # vpn-auto-reconnect.sh
 
-A simple bash script for autoreconnect to OpenVPN via NetworkManager command-line (mncli).
+A simple bash script for autoreconnect to OpenVPN via NetworkManager command-line (nmcli).
 
 ## Usage:
 
