@@ -56,6 +56,7 @@ function connectToVPN {
 function pingTest {
   # $1 = host
   # $2 = reconnect?
+  echo "ping $1 and reconnect = $2"
   PINGCON=$(ping $1 -c 2 -q -W $PING_TIMEOUT | grep "2 received")
   if [[ $PINGCON != *2*received* ]]; then
     logStuff "$(date +%Y/%m/%d\ %H:%M:%S) -> Ping check timeout ($1)..."
@@ -88,16 +89,19 @@ elif [[ $1 == "start" ]]; then
     done
     if [[ $PING_CHECK_ENABLED = true ]]; then
       i=0
+      s=0
       host_length=${#HOSTS[@]}
       host_pings_needed=true
       while $host_pings_needed; do
         host=${HOSTS[i]}
-        i=$(($i+1))
-        if [ $i -eq $host_length ]; then
+        if [ $i -eq $(($host_length - 1)) ]; then
           pingTest $host true
-        else 
+        else
           pingTest $host
         fi
+        i=$((($i+1) % $host_length))
+        s=$(($s+1))
+        sleep $s
       done
       vpn_index=0 # Prefer first
     fi
