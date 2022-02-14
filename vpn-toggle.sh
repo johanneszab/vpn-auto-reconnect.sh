@@ -13,7 +13,7 @@
 # Config #
 ##########
 
-source $(dirname $0)/vpn-config.sh
+source $(dirname $(readlink -f $0))/vpn-config.sh
 
 ##################
 # Implementation #
